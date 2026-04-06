@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="CyberNet 留言反馈 - 意见建议">
+  <title>留言反馈 - CyberNet</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <style>
+    .page-header {
+      padding: calc(var(--nav-height) + var(--spacing-xl)) 0 var(--spacing-xl);
+      text-align: center;
+      background: linear-gradient(180deg, rgba(99, 102, 241, 0.1) 0%, transparent 100%);
+    }
+    
+    .page-title {
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .contact-section {
+      padding: var(--spacing-2xl) 0;
+    }
+    
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-2xl);
+    }
+    
+    /* 表单区域 */
+    .form-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-xl);
+      padding: var(--spacing-xl);
+    }
+    
+    .form-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: var(--spacing-lg);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+    
+    .form-group {
+      margin-bottom: var(--spacing-lg);
+    }
+    
+    .form-label {
+      display: block;
+      margin-bottom: var(--spacing-xs);
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    
+    .form-label .required {
+      color: #ef4444;
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: var(--spacing-sm) var(--spacing-md);
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      font-size: 0.95rem;
+      transition: all var(--transition-fast);
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+    
+    .form-input.error {
+      border-color: #ef4444;
+    }
+    
+    .form-input.success {
+      border-color: #10b981;
+    }
+    
+    .form-textarea {
+      min-height: 150px;
+      resize: vertical;
+    }
+    
+    .error-message {
+      color: #ef4444;
+      font-size: 0.8rem;
+      margin-top: var(--spacing-xs);
+      display: none;
+    }
+    
+    .error-message.show {
+      display: block;
+    }
+    
+    .btn-submit {
+      width: 100%;
+      padding: var(--spacing-md);
+      background: var(--gradient-primary);
+      color: white;
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .btn-submit:hover {
+      box-shadow: var(--shadow-glow);
+    }
+    
+    .btn-submit:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+    
+    .btn-submit .loading {
+      display: none;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
+    
+    .btn-submit.loading .btn-text {
+      visibility: hidden;
+    }
+    
+    .btn-submit.loading .loading {
+      display: block;
+    }
+    
+    .loading-spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* 联系方式区域 */
+    .contact-info {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-lg);
+    }
+    
+    .info-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-xl);
+      padding: var(--spacing-lg);
+      transition: all var(--transition-normal);
+    }
+    
+    .info-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-4px);
+    }
+    
+    .info-header {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+      margin-bottom: var(--spacing-sm);
+    }
+    
+    .info-icon {
+      width: 50px;
+      height: 50px;
+      background: var(--gradient-primary);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+    
+    .info-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+    
+    .info-desc {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+    
+    /* 成功弹窗 */
+    .success-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all var(--transition-normal);
+    }
+    
+    .success-modal.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .success-content {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-xl);
+      padding: var(--spacing-2xl);
+      text-align: center;
+      max-width: 400px;
+      transform: scale(0.9);
+      transition: transform var(--transition-normal);
+    }
+    
+    .success-modal.active .success-content {
+      transform: scale(1);
+    }
+    
+    .success-icon {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(52, 211, 153, 0.2));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      margin: 0 auto var(--spacing-lg);
+    }
+    
+    .success-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: var(--spacing-sm);
+    }
+    
+    .success-desc {
+      color: var(--text-secondary);
+      margin-bottom: var(--spacing-lg);
+    }
+    
+    .btn-close {
+      padding: var(--spacing-sm) var(--spacing-xl);
+      background: var(--gradient-primary);
+      color: white;
+      border: none;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+    
+    .btn-close:hover {
+      box-shadow: var(--shadow-glow);
+    }
+    
+    @media (max-width: 992px) {
+      .contact-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .page-title {
+        font-size: 1.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 页面加载动画 -->
+  <div class="page-loader">
+    <div class="loader-content">
+      <div class="loader-spinner"></div>
+      <div class="loader-text">LOADING...</div>
+    </div>
+  </div>
+  
+  <!-- 粒子背景 -->
+  <div class="particles-bg">
+    <canvas id="particles-canvas"></canvas>
+  </div>
+  
+  <!-- 导航栏 -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="navbar-logo">
+        <div class="logo-icon">🛡️</div>
+        <span>CyberNet</span>
+      </a>
+      
+      <ul class="navbar-menu">
+        <li><a href="index.html">首页</a></li>
+        <li><a href="about.html">关于平台</a></li>
+        <li><a href="news.html">安全资讯</a></li>
+        <li><a href="dashboard.html">威胁监控</a></li>
+        <li><a href="knowledge.html">安全科普</a></li>
+        <li><a href="tools.html">在线工具</a></li>
+        <li><a href="quiz.html">安全测评</a></li>
+        <li><a href="resources.html">学习资源</a></li>
+        <li><a href="contact.html" class="active">留言反馈</a></li>
+      </ul>
+      
+      <div class="navbar-actions">
+        <button class="theme-toggle" title="切换主题">🌙</button>
+        <button class="menu-toggle">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+  
+  <!-- 主要内容 -->
+  <main class="main-content">
+    <section class="page-header">
+      <div class="container">
+        <h1 class="page-title scroll-reveal">留言反馈</h1>
+        <p class="section-subtitle scroll-reveal">您的建议是我们前进的动力</p>
+      </div>
+    </section>
+    
+    <section class="contact-section">
+      <div class="container">
+        <div class="contact-grid">
+          <!-- 表单区域 -->
+          <div class="form-card scroll-reveal">
+            <h2 class="form-title">📝 提交反馈</h2>
+            
+            <form id="feedbackForm">
+              <div class="form-group">
+                <label class="form-label">
+                  您的姓名 <span class="required">*</span>
+                </label>
+                <input type="text" class="form-input" id="name" placeholder="请输入您的姓名">
+                <div class="error-message" id="nameError">请输入您的姓名</div>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">
+                  电子邮箱 <span class="required">*</span>
+                </label>
+                <input type="email" class="form-input" id="email" placeholder="请输入您的邮箱">
+                <div class="error-message" id="emailError">请输入有效的邮箱地址</div>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">
+                  反馈类型
+                </label>
+                <select class="form-input" id="type">
+                  <option value="suggestion">功能建议</option>
+                  <option value="bug">问题反馈</option>
+                  <option value="cooperation">合作咨询</option>
+                  <option value="other">其他</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">
+                  反馈内容 <span class="required">*</span>
+                </label>
+                <textarea class="form-input form-textarea" id="message" placeholder="请详细描述您的建议或问题..."></textarea>
+                <div class="error-message" id="messageError">请输入反馈内容（至少10个字符）</div>
+              </div>
+              
+              <button type="submit" class="btn-submit" id="submitBtn">
+                <span class="btn-text">提交反馈</span>
+                <div class="loading">
+                  <div class="loading-spinner"></div>
+                </div>
+              </button>
+            </form>
+          </div>
+          
+          <!-- 联系方式 -->
+          <div class="contact-info">
+            <div class="info-card scroll-reveal">
+              <div class="info-header">
+                <div class="info-icon">📧</div>
+                <h3 class="info-title">电子邮箱</h3>
+              </div>
+              <p class="info-desc">
+                发送邮件至 security@cybernet.com<br>
+                我们会在24小时内回复您
+              </p>
+            </div>
+            
+            <div class="info-card scroll-reveal">
+              <div class="info-header">
+                <div class="info-icon">💬</div>
+                <h3 class="info-title">在线客服</h3>
+              </div>
+              <p class="info-desc">
+                工作时间: 周一至周五 9:00-18:00<br>
+                实时解答您的疑问
+              </p>
+            </div>
+            
+            <div class="info-card scroll-reveal">
+              <div class="info-header">
+                <div class="info-icon">🏢</div>
+                <h3 class="info-title">公司地址</h3>
+              </div>
+              <p class="info-desc">
+                北京市海淀区中关村科技园<br>
+                CyberNet 安全研究中心
+              </p>
+            </div>
+            
+            <div class="info-card scroll-reveal">
+              <div class="info-header">
+                <div class="info-icon">📱</div>
+                <h3 class="info-title">关注我们</h3>
+              </div>
+              <p class="info-desc">
+                扫描二维码关注公众号<br>
+                获取最新安全资讯
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  
+  <!-- 成功弹窗 -->
+  <div class="success-modal" id="successModal">
+    <div class="success-content">
+      <div class="success-icon">✅</div>
+      <h2 class="success-title">提交成功！</h2>
+      <p class="success-desc">感谢您的反馈，我们会尽快处理并回复您。</p>
+      <button class="btn-close" onclick="closeSuccessModal()">确定</button>
+    </div>
+  </div>
+  
+  <!-- 页脚 -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4>CyberNet</h4>
+          <p style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.5rem;">
+            您的数字安全守护者<br>
+            智能・专业・可靠
+          </p>
+        </div>
+        <div class="footer-section">
+          <h4>核心功能</h4>
+          <ul>
+            <li><a href="news.html">安全资讯</a></li>
+            <li><a href="dashboard.html">威胁监控</a></li>
+            <li><a href="tools.html">在线工具</a></li>
+            <li><a href="quiz.html">安全测评</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>学习资源</h4>
+          <ul>
+            <li><a href="knowledge.html">安全科普</a></li>
+            <li><a href="resources.html">资源中心</a></li>
+            <li><a href="about.html">关于平台</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>联系我们</h4>
+          <ul>
+            <li><a href="contact.html">留言反馈</a></li>
+            <li><a href="mailto:security@cybernet.com">security@cybernet.com</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2024 CyberNet 数字安全中枢. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+  
+  <button class="back-to-top" title="回到顶部">↑</button>
+  
+  <script src="js/main.js"></script>
+  <script>
+    const form = document.getElementById('feedbackForm');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    // 表单验证
+    function validateForm() {
+      let isValid = true;
+      
+      // 姓名验证
+      const name = document.getElementById('name');
+      const nameError = document.getElementById('nameError');
+      if (!name.value.trim()) {
+        name.classList.add('error');
+        nameError.classList.add('show');
+        isValid = false;
+      } else {
+        name.classList.remove('error');
+        nameError.classList.remove('show');
+      }
+      
+      // 邮箱验证
+      const email = document.getElementById('email');
+      const emailError = document.getElementById('emailError');
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email.value)) {
+        email.classList.add('error');
+        emailError.classList.add('show');
+        isValid = false;
+      } else {
+        email.classList.remove('error');
+        emailError.classList.remove('show');
+      }
+      
+      // 内容验证
+      const message = document.getElementById('message');
+      const messageError = document.getElementById('messageError');
+      if (!message.value.trim() || message.value.trim().length < 10) {
+        message.classList.add('error');
+        messageError.classList.add('show');
+        isValid = false;
+      } else {
+        message.classList.remove('error');
+        messageError.classList.remove('show');
+      }
+      
+      return isValid;
+    }
+    
+    // 实时验证
+    document.querySelectorAll('.form-input').forEach(input => {
+      input.addEventListener('blur', function() {
+        validateField(this);
+      });
+      
+      input.addEventListener('input', function() {
+        if (this.classList.contains('error')) {
+          validateField(this);
+        }
+      });
+    });
+    
+    function validateField(field) {
+      const id = field.id;
+      const value = field.value.trim();
+      
+      switch(id) {
+        case 'name':
+          if (value) {
+            field.classList.remove('error');
+            field.classList.add('success');
+            document.getElementById('nameError').classList.remove('show');
+          }
+          break;
+        case 'email':
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (emailRegex.test(value)) {
+            field.classList.remove('error');
+            field.classList.add('success');
+            document.getElementById('emailError').classList.remove('show');
+          }
+          break;
+        case 'message':
+          if (value.length >= 10) {
+            field.classList.remove('error');
+            field.classList.add('success');
+            document.getElementById('messageError').classList.remove('show');
+          }
+          break;
+      }
+    }
+    
+    // 表单提交
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      if (!validateForm()) {
+        return;
+      }
+      
+      // 显示加载状态
+      submitBtn.classList.add('loading');
+      submitBtn.disabled = true;
+      
+      // 模拟提交
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // 重置状态
+      submitBtn.classList.remove('loading');
+      submitBtn.disabled = false;
+      
+      // 显示成功弹窗
+      document.getElementById('successModal').classList.add('active');
+      
+      // 重置表单
+      form.reset();
+      document.querySelectorAll('.form-input').forEach(input => {
+        input.classList.remove('success');
+      });
+    });
+    
+    // 关闭成功弹窗
+    function closeSuccessModal() {
+      document.getElementById('successModal').classList.remove('active');
+    }
+    
+    // 点击背景关闭
+    document.getElementById('successModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeSuccessModal();
+      }
+    });
+  </script>
+</body>
+</html>

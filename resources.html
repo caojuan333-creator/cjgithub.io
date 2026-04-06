@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="CyberNet 学习资源 - 网络安全学习资料">
+  <title>学习资源 - CyberNet</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <style>
+    .page-header {
+      padding: calc(var(--nav-height) + var(--spacing-xl)) 0 var(--spacing-xl);
+      text-align: center;
+      background: linear-gradient(180deg, rgba(99, 102, 241, 0.1) 0%, transparent 100%);
+    }
+    
+    .page-title {
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .filter-section {
+      padding: var(--spacing-lg) 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .filter-tags {
+      display: flex;
+      gap: var(--spacing-sm);
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    
+    .filter-tag {
+      padding: var(--spacing-sm) var(--spacing-lg);
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-full);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+    
+    .filter-tag:hover {
+      border-color: var(--primary);
+      color: var(--primary-light);
+    }
+    
+    .filter-tag.active {
+      background: var(--gradient-primary);
+      border-color: transparent;
+      color: white;
+    }
+    
+    .resources-section {
+      padding: var(--spacing-xl) 0;
+    }
+    
+    .resources-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--spacing-lg);
+    }
+    
+    /* 翻转卡片 */
+    .flip-card {
+      perspective: 1000px;
+      height: 280px;
+      cursor: pointer;
+    }
+    
+    .flip-card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+    }
+    
+    .flip-card:hover .flip-card-inner {
+      transform: rotateY(180deg);
+    }
+    
+    .flip-card-front,
+    .flip-card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: var(--radius-xl);
+      padding: var(--spacing-lg);
+    }
+    
+    .flip-card-front {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    
+    .resource-icon {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      margin-bottom: var(--spacing-md);
+    }
+    
+    .resource-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: var(--spacing-xs);
+    }
+    
+    .resource-level {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      padding: var(--spacing-xs) var(--spacing-sm);
+      background: rgba(99, 102, 241, 0.2);
+      border-radius: var(--radius-full);
+    }
+    
+    .flip-card-back {
+      background: var(--gradient-primary);
+      transform: rotateY(180deg);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    
+    .back-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: var(--spacing-md);
+      color: white;
+    }
+    
+    .back-desc {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 0.9rem;
+      line-height: 1.6;
+      margin-bottom: var(--spacing-md);
+    }
+    
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+      color: white;
+      font-size: 0.9rem;
+      text-decoration: underline;
+    }
+    
+    /* 拖拽排序提示 */
+    .drag-hint {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin-bottom: var(--spacing-lg);
+    }
+    
+    .resource-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-xl);
+      padding: var(--spacing-lg);
+      cursor: grab;
+      transition: all var(--transition-fast);
+      margin-bottom: var(--spacing-md);
+    }
+    
+    .resource-card:active {
+      cursor: grabbing;
+    }
+    
+    .resource-card.dragging {
+      opacity: 0.5;
+      transform: scale(1.02);
+    }
+    
+    .resource-card-header {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+      margin-bottom: var(--spacing-sm);
+    }
+    
+    .resource-card-icon {
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+    
+    .resource-card-title {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+    
+    .resource-card-desc {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      margin-bottom: var(--spacing-sm);
+    }
+    
+    .resource-card-tags {
+      display: flex;
+      gap: var(--spacing-xs);
+      flex-wrap: wrap;
+    }
+    
+    .resource-card-tags .tag {
+      font-size: 0.75rem;
+    }
+    
+    .hidden {
+      display: none !important;
+    }
+    
+    @media (max-width: 992px) {
+      .resources-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .resources-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .page-title {
+        font-size: 1.8rem;
+      }
+      
+      .flip-card {
+        height: 250px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 页面加载动画 -->
+  <div class="page-loader">
+    <div class="loader-content">
+      <div class="loader-spinner"></div>
+      <div class="loader-text">LOADING...</div>
+    </div>
+  </div>
+  
+  <!-- 粒子背景 -->
+  <div class="particles-bg">
+    <canvas id="particles-canvas"></canvas>
+  </div>
+  
+  <!-- 导航栏 -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="navbar-logo">
+        <div class="logo-icon">🛡️</div>
+        <span>CyberNet</span>
+      </a>
+      
+      <ul class="navbar-menu">
+        <li><a href="index.html">首页</a></li>
+        <li><a href="about.html">关于平台</a></li>
+        <li><a href="news.html">安全资讯</a></li>
+        <li><a href="dashboard.html">威胁监控</a></li>
+        <li><a href="knowledge.html">安全科普</a></li>
+        <li><a href="tools.html">在线工具</a></li>
+        <li><a href="quiz.html">安全测评</a></li>
+        <li><a href="resources.html" class="active">学习资源</a></li>
+        <li><a href="contact.html">留言反馈</a></li>
+      </ul>
+      
+      <div class="navbar-actions">
+        <button class="theme-toggle" title="切换主题">🌙</button>
+        <button class="menu-toggle">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+  
+  <!-- 主要内容 -->
+  <main class="main-content">
+    <section class="page-header">
+      <div class="container">
+        <h1 class="page-title scroll-reveal">学习资源</h1>
+        <p class="section-subtitle scroll-reveal">精选网络安全学习资料，从入门到进阶</p>
+      </div>
+    </section>
+    
+    <section class="filter-section">
+      <div class="container">
+        <div class="filter-tags">
+          <button class="filter-tag active" data-filter="all">全部</button>
+          <button class="filter-tag" data-filter="beginner">入门</button>
+          <button class="filter-tag" data-filter="intermediate">进阶</button>
+          <button class="filter-tag" data-filter="ctf">CTF</button>
+        </div>
+      </div>
+    </section>
+    
+    <section class="resources-section">
+      <div class="container">
+        <p class="drag-hint">💡 拖拽卡片可以调整顺序，悬停查看详情</p>
+        
+        <div class="resources-grid" id="resourcesGrid">
+          <!-- 资源卡片由 JS 生成 -->
+        </div>
+      </div>
+    </section>
+  </main>
+  
+  <!-- 页脚 -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4>CyberNet</h4>
+          <p style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.5rem;">
+            您的数字安全守护者<br>
+            智能・专业・可靠
+          </p>
+        </div>
+        <div class="footer-section">
+          <h4>核心功能</h4>
+          <ul>
+            <li><a href="news.html">安全资讯</a></li>
+            <li><a href="dashboard.html">威胁监控</a></li>
+            <li><a href="tools.html">在线工具</a></li>
+            <li><a href="quiz.html">安全测评</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>学习资源</h4>
+          <ul>
+            <li><a href="knowledge.html">安全科普</a></li>
+            <li><a href="resources.html">资源中心</a></li>
+            <li><a href="about.html">关于平台</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>联系我们</h4>
+          <ul>
+            <li><a href="contact.html">留言反馈</a></li>
+            <li><a href="mailto:security@cybernet.com">security@cybernet.com</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2024 CyberNet 数字安全中枢. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+  
+  <button class="back-to-top" title="回到顶部">↑</button>
+  
+  <script src="js/main.js"></script>
+  <script>
+    const resources = [
+      {
+        id: 1,
+        icon: 'images/resource-basics.jpg',
+        title: '网络安全基础入门',
+        level: 'beginner',
+        levelLabel: '入门',
+        desc: '学习网络安全的基本概念、常见威胁类型和防护措施，适合零基础学习者。',
+        link: 'https://www.freebuf.com/articles/network'
+      },
+      {
+        id: 2,
+        icon: 'images/resource-crypto.jpg',
+        title: '密码学原理与实践',
+        level: 'intermediate',
+        levelLabel: '进阶',
+        desc: '深入理解加密算法、数字签名、PKI体系等核心密码学知识。',
+        link: 'https://www.crypto101.io/'
+      },
+      {
+        id: 3,
+        icon: 'images/resource-web.jpg',
+        title: 'Web 安全攻防实战',
+        level: 'intermediate',
+        levelLabel: '进阶',
+        desc: '学习OWASP Top 10漏洞原理、渗透测试方法和防护技术。',
+        link: 'https://owasp.org/www-project-top-ten/'
+      },
+      {
+        id: 4,
+        icon: 'images/resource-ctf.jpg',
+        title: 'CTF 竞赛入门指南',
+        level: 'ctf',
+        levelLabel: 'CTF',
+        desc: 'CTF比赛介绍、题型解析和刷题平台推荐。',
+        link: 'https://ctftime.org/'
+      },
+      {
+        id: 5,
+        icon: 'images/resource-vuln.jpg',
+        title: '漏洞挖掘与利用',
+        level: 'ctf',
+        levelLabel: 'CTF',
+        desc: '学习漏洞发现、分析和利用的高级技术。',
+        link: 'https://cve.mitre.org/'
+      },
+      {
+        id: 6,
+        icon: 'images/resource-python.jpg',
+        title: 'Python 安全编程',
+        level: 'beginner',
+        levelLabel: '入门',
+        desc: '使用Python编写安全工具和自动化脚本。',
+        link: 'https://github.com/topics/python-security'
+      },
+      {
+        id: 7,
+        icon: 'images/resource-pentest.jpg',
+        title: '渗透测试方法论',
+        level: 'intermediate',
+        levelLabel: '进阶',
+        desc: '系统学习渗透测试的完整流程和最佳实践。',
+        link: 'https://www.ptes-standard.org/'
+      },
+      {
+        id: 8,
+        icon: 'images/resource-ent.jpg',
+        title: '企业安全建设',
+        level: 'intermediate',
+        levelLabel: '进阶',
+        desc: '了解企业安全体系架构、安全运营和应急响应。',
+        link: 'https://www.sans.org/'
+      },
+      {
+        id: 9,
+        icon: 'images/resource-mobile.jpg',
+        title: '移动应用安全',
+        level: 'intermediate',
+        levelLabel: '进阶',
+        desc: 'Android和iOS应用安全分析与测试技术。',
+        link: 'https://owasp.org/www-project-mobile-app-security/'
+      }
+    ];
+    
+    let currentFilter = 'all';
+    
+    function renderResources(filter = 'all') {
+      const grid = document.getElementById('resourcesGrid');
+      grid.innerHTML = '';
+      
+      const filteredResources = filter === 'all' 
+        ? resources 
+        : resources.filter(r => r.level === filter);
+      
+      filteredResources.forEach((resource, index) => {
+        const card = document.createElement('div');
+        card.className = 'flip-card scroll-reveal';
+        card.draggable = true;
+        card.dataset.id = resource.id;
+        
+        card.innerHTML = `
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <div class="resource-icon">
+                <img src="${resource.icon}" alt="${resource.title}" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-md);">
+              </div>
+              <h3 class="resource-title">${resource.title}</h3>
+              <span class="resource-level">${resource.levelLabel}</span>
+            </div>
+            <div class="flip-card-back">
+              <h4 class="back-title">${resource.title}</h4>
+              <p class="back-desc">${resource.desc}</p>
+              <a href="${resource.link}" target="_blank" rel="noopener noreferrer" class="back-link">查看详情 →</a>
+            </div>
+          </div>
+        `;
+        
+        // 拖拽事件
+        card.addEventListener('dragstart', handleDragStart);
+        card.addEventListener('dragend', handleDragEnd);
+        card.addEventListener('dragover', handleDragOver);
+        card.addEventListener('drop', handleDrop);
+        
+        grid.appendChild(card);
+      });
+      
+      // 触发动画
+      setTimeout(() => {
+        document.querySelectorAll('.scroll-reveal').forEach(el => {
+          el.classList.add('revealed');
+        });
+      }, 100);
+    }
+    
+    // 拖拽功能
+    let draggedItem = null;
+    
+    function handleDragStart(e) {
+      draggedItem = this;
+      this.classList.add('dragging');
+    }
+    
+    function handleDragEnd(e) {
+      this.classList.remove('dragging');
+      draggedItem = null;
+    }
+    
+    function handleDragOver(e) {
+      e.preventDefault();
+    }
+    
+    function handleDrop(e) {
+      e.preventDefault();
+      if (draggedItem !== this) {
+        const grid = document.getElementById('resourcesGrid');
+        const allCards = [...grid.children];
+        const draggedIndex = allCards.indexOf(draggedItem);
+        const targetIndex = allCards.indexOf(this);
+        
+        if (draggedIndex < targetIndex) {
+          this.parentNode.insertBefore(draggedItem, this.nextSibling);
+        } else {
+          this.parentNode.insertBefore(draggedItem, this);
+        }
+      }
+    }
+    
+    // 筛选切换
+    document.querySelectorAll('.filter-tag').forEach(tag => {
+      tag.addEventListener('click', () => {
+        document.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active'));
+        tag.classList.add('active');
+        currentFilter = tag.dataset.filter;
+        renderResources(currentFilter);
+      });
+    });
+    
+    // 初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      renderResources();
+    });
+  </script>
+</body>
+</html>

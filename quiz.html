@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="CyberNet 安全测评 - 测试您的网络安全知识">
+  <title>安全测评 - CyberNet</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <style>
+    .page-header {
+      padding: calc(var(--nav-height) + var(--spacing-xl)) 0 var(--spacing-xl);
+      text-align: center;
+      background: linear-gradient(180deg, rgba(99, 102, 241, 0.1) 0%, transparent 100%);
+    }
+    
+    .page-title {
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .quiz-section {
+      padding: var(--spacing-xl) 0;
+    }
+    
+    .quiz-container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    /* 进度条 */
+    .quiz-progress {
+      margin-bottom: var(--spacing-xl);
+    }
+    
+    .progress-info {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: var(--spacing-sm);
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    
+    .progress-bar {
+      height: 6px;
+      background: var(--bg-tertiary);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: var(--gradient-primary);
+      border-radius: var(--radius-full);
+      transition: width var(--transition-normal);
+    }
+    
+    /* 问题卡片 */
+    .question-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-xl);
+      padding: var(--spacing-xl);
+      margin-bottom: var(--spacing-lg);
+    }
+    
+    .question-number {
+      display: inline-block;
+      padding: var(--spacing-xs) var(--spacing-sm);
+      background: rgba(99, 102, 241, 0.2);
+      color: var(--primary-light);
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      margin-bottom: var(--spacing-md);
+    }
+    
+    .question-text {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: var(--spacing-lg);
+      line-height: 1.6;
+    }
+    
+    .options-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-sm);
+    }
+    
+    .option-item {
+      padding: var(--spacing-md);
+      background: var(--bg-tertiary);
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+    }
+    
+    .option-item:hover {
+      border-color: var(--primary);
+      background: rgba(99, 102, 241, 0.1);
+    }
+    
+    .option-item.selected {
+      border-color: var(--primary);
+      background: rgba(99, 102, 241, 0.2);
+    }
+    
+    .option-item.correct {
+      border-color: #10b981;
+      background: rgba(16, 185, 129, 0.2);
+    }
+    
+    .option-item.wrong {
+      border-color: #ef4444;
+      background: rgba(239, 68, 68, 0.2);
+    }
+    
+    .option-letter {
+      width: 32px;
+      height: 32px;
+      background: var(--bg-secondary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    
+    .option-item.selected .option-letter {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .option-text {
+      flex: 1;
+    }
+    
+    /* 操作按钮 */
+    .quiz-actions {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--spacing-md);
+    }
+    
+    .btn {
+      padding: var(--spacing-sm) var(--spacing-xl);
+      border-radius: var(--radius-md);
+      font-size: 1rem;
+      border: none;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+    
+    .btn-primary {
+      background: var(--gradient-primary);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      box-shadow: var(--shadow-glow);
+    }
+    
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .btn-secondary {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+    
+    .btn-secondary:hover {
+      border-color: var(--primary);
+    }
+    
+    /* 结果页面 */
+    .result-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-xl);
+      padding: var(--spacing-2xl);
+      text-align: center;
+    }
+    
+    .result-icon {
+      font-size: 4rem;
+      margin-bottom: var(--spacing-lg);
+    }
+    
+    .result-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: var(--spacing-md);
+    }
+    
+    .result-score {
+      font-size: 3rem;
+      font-weight: 800;
+      background: var(--gradient-neon);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: var(--spacing-md);
+    }
+    
+    .result-desc {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+      margin-bottom: var(--spacing-xl);
+    }
+    
+    .result-stats {
+      display: flex;
+      justify-content: center;
+      gap: var(--spacing-xl);
+      margin-bottom: var(--spacing-xl);
+    }
+    
+    .stat-item {
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+    
+    .stat-label {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    
+    .hidden {
+      display: none !important;
+    }
+    
+    @media (max-width: 768px) {
+      .page-title {
+        font-size: 1.8rem;
+      }
+      
+      .quiz-actions {
+        flex-direction: column;
+      }
+      
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 页面加载动画 -->
+  <div class="page-loader">
+    <div class="loader-content">
+      <div class="loader-spinner"></div>
+      <div class="loader-text">LOADING...</div>
+    </div>
+  </div>
+  
+  <!-- 粒子背景 -->
+  <div class="particles-bg">
+    <canvas id="particles-canvas"></canvas>
+  </div>
+  
+  <!-- 导航栏 -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="navbar-logo">
+        <div class="logo-icon">🛡️</div>
+        <span>CyberNet</span>
+      </a>
+      
+      <ul class="navbar-menu">
+        <li><a href="index.html">首页</a></li>
+        <li><a href="about.html">关于平台</a></li>
+        <li><a href="news.html">安全资讯</a></li>
+        <li><a href="dashboard.html">威胁监控</a></li>
+        <li><a href="knowledge.html">安全科普</a></li>
+        <li><a href="tools.html">在线工具</a></li>
+        <li><a href="quiz.html" class="active">安全测评</a></li>
+        <li><a href="resources.html">学习资源</a></li>
+        <li><a href="contact.html">留言反馈</a></li>
+      </ul>
+      
+      <div class="navbar-actions">
+        <button class="theme-toggle" title="切换主题">🌙</button>
+        <button class="menu-toggle">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+  
+  <!-- 主要内容 -->
+  <main class="main-content">
+    <section class="page-header">
+      <div class="container">
+        <h1 class="page-title scroll-reveal">安全知识测评</h1>
+        <p class="section-subtitle scroll-reveal">测试您的网络安全知识水平</p>
+      </div>
+    </section>
+    
+    <section class="quiz-section">
+      <div class="container">
+        <div class="quiz-container">
+          <!-- 测验区域 -->
+          <div id="quizArea">
+            <div class="quiz-progress">
+              <div class="progress-info">
+                <span>题目 <span id="currentQuestion">1</span> / <span id="totalQuestions">10</span></span>
+                <span>得分: <span id="currentScore">0</span></span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 10%"></div>
+              </div>
+            </div>
+            
+            <div class="question-card" id="questionCard">
+              <!-- 问题内容由 JS 生成 -->
+            </div>
+            
+            <div class="quiz-actions">
+              <button class="btn btn-secondary" id="prevBtn" onclick="prevQuestion()" disabled>上一题</button>
+              <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">下一题</button>
+            </div>
+          </div>
+          
+          <!-- 结果区域 -->
+          <div id="resultArea" class="hidden">
+            <div class="result-card">
+              <div class="result-icon" id="resultIcon">🎉</div>
+              <h2 class="result-title" id="resultTitle">测评完成！</h2>
+              <div class="result-score"><span id="finalScore">0</span>分</div>
+              <p class="result-desc" id="resultDesc">您的安全知识水平不错，继续加油！</p>
+              
+              <div class="result-stats">
+                <div class="stat-item">
+                  <div class="stat-value" style="color: #10b981;" id="correctCount">0</div>
+                  <div class="stat-label">正确</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-value" style="color: #ef4444;" id="wrongCount">0</div>
+                  <div class="stat-label">错误</div>
+                </div>
+              </div>
+              
+              <button class="btn btn-primary" onclick="restartQuiz()">重新测试</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  
+  <!-- 页脚 -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4>CyberNet</h4>
+          <p style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.5rem;">
+            您的数字安全守护者<br>
+            智能・专业・可靠
+          </p>
+        </div>
+        <div class="footer-section">
+          <h4>核心功能</h4>
+          <ul>
+            <li><a href="news.html">安全资讯</a></li>
+            <li><a href="dashboard.html">威胁监控</a></li>
+            <li><a href="tools.html">在线工具</a></li>
+            <li><a href="quiz.html">安全测评</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>学习资源</h4>
+          <ul>
+            <li><a href="knowledge.html">安全科普</a></li>
+            <li><a href="resources.html">资源中心</a></li>
+            <li><a href="about.html">关于平台</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>联系我们</h4>
+          <ul>
+            <li><a href="contact.html">留言反馈</a></li>
+            <li><a href="mailto:security@cybernet.com">security@cybernet.com</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2024 CyberNet 数字安全中枢. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+  
+  <button class="back-to-top" title="回到顶部">↑</button>
+  
+  <script src="js/main.js"></script>
+  <script>
+    const questions = [
+      {
+        question: "以下哪种密码最安全？",
+        options: ["123456", "password", "Cyber@2024!", "qwerty"],
+        correct: 2
+      },
+      {
+        question: "收到一封要求您点击链接更新账户信息的邮件，您应该怎么做？",
+        options: ["立即点击链接更新", "转发给朋友", "通过官方渠道验证后再操作", "回复邮件询问详情"],
+        correct: 2
+      },
+      {
+        question: "使用公共WiFi时，以下哪种做法最安全？",
+        options: ["登录网银转账", "进行在线购物", "使用VPN加密连接", "输入密码登录账户"],
+        correct: 2
+      },
+      {
+        question: "双重认证（2FA）的主要作用是什么？",
+        options: ["让登录更麻烦", "增加账户安全性", "加快登录速度", "减少密码长度要求"],
+        correct: 1
+      },
+      {
+        question: "以下哪个是钓鱼网站的典型特征？",
+        options: ["使用HTTPS协议", "URL地址与官方网站略有不同", "网站设计精美", "提供客户服务热线"],
+        correct: 1
+      },
+      {
+        question: "什么是社会工程学攻击？",
+        options: ["一种编程技术", "利用人性弱点获取信息", "硬件攻击方式", "网络协议漏洞"],
+        correct: 1
+      },
+      {
+        question: "发现账户被盗后，第一时间应该做什么？",
+        options: ["发朋友圈吐槽", "立即修改密码并通知平台", "什么都不做", "注销账户"],
+        correct: 1
+      },
+      {
+        question: "以下哪种行为最容易导致电脑中毒？",
+        options: ["从官方网站下载软件", "打开陌生人发送的邮件附件", "使用正版杀毒软件", "定期更新系统"],
+        correct: 1
+      },
+      {
+        question: "勒索软件的主要危害是什么？",
+        options: ["删除系统文件", "加密用户文件勒索赎金", "窃取账户密码", "监控系统屏幕"],
+        correct: 1
+      },
+      {
+        question: "定期更换密码的最佳频率是？",
+        options: ["每天", "每周", "每3-6个月", "从不更换"],
+        correct: 2
+      }
+    ];
+    
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let answers = [];
+    
+    function initQuiz() {
+      document.getElementById('totalQuestions').textContent = questions.length;
+      renderQuestion();
+    }
+    
+    function renderQuestion() {
+      const question = questions[currentQuestionIndex];
+      const card = document.getElementById('questionCard');
+      
+      const letters = ['A', 'B', 'C', 'D'];
+      
+      card.innerHTML = `
+        <span class="question-number">问题 ${currentQuestionIndex + 1}</span>
+        <h3 class="question-text">${question.question}</h3>
+        <div class="options-list">
+          ${question.options.map((opt, i) => `
+            <div class="option-item ${answers[currentQuestionIndex] === i ? 'selected' : ''}" onclick="selectOption(${i})">
+              <span class="option-letter">${letters[i]}</span>
+              <span class="option-text">${opt}</span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+      
+      // 更新进度
+      document.getElementById('currentQuestion').textContent = currentQuestionIndex + 1;
+      document.getElementById('progressFill').style.width = ((currentQuestionIndex + 1) / questions.length * 100) + '%';
+      
+      // 更新按钮状态
+      document.getElementById('prevBtn').disabled = currentQuestionIndex === 0;
+      document.getElementById('nextBtn').textContent = currentQuestionIndex === questions.length - 1 ? '提交答案' : '下一题';
+    }
+    
+    function selectOption(index) {
+      answers[currentQuestionIndex] = index;
+      renderQuestion();
+    }
+    
+    function nextQuestion() {
+      if (answers[currentQuestionIndex] === undefined) {
+        alert('请选择一个答案');
+        return;
+      }
+      
+      if (currentQuestionIndex < questions.length - 1) {
+        currentQuestionIndex++;
+        renderQuestion();
+      } else {
+        showResult();
+      }
+    }
+    
+    function prevQuestion() {
+      if (currentQuestionIndex > 0) {
+        currentQuestionIndex--;
+        renderQuestion();
+      }
+    }
+    
+    function showResult() {
+      // 计算得分
+      score = 0;
+      questions.forEach((q, i) => {
+        if (answers[i] === q.correct) score++;
+      });
+      
+      const percentage = Math.round((score / questions.length) * 100);
+      
+      // 更新结果页面
+      document.getElementById('finalScore').textContent = percentage;
+      document.getElementById('correctCount').textContent = score;
+      document.getElementById('wrongCount').textContent = questions.length - score;
+      
+      // 根据分数显示不同结果
+      if (percentage >= 80) {
+        document.getElementById('resultIcon').textContent = '🏆';
+        document.getElementById('resultTitle').textContent = '安全专家！';
+        document.getElementById('resultDesc').textContent = '您的网络安全知识非常扎实，继续保持！';
+      } else if (percentage >= 60) {
+        document.getElementById('resultIcon').textContent = '🎉';
+        document.getElementById('resultTitle').textContent = '表现不错！';
+        document.getElementById('resultDesc').textContent = '您的安全知识水平不错，还有提升空间！';
+      } else {
+        document.getElementById('resultIcon').textContent = '📚';
+        document.getElementById('resultTitle').textContent = '继续学习！';
+        document.getElementById('resultDesc').textContent = '建议多了解网络安全知识，保护好自己的数字生活！';
+      }
+      
+      // 切换显示
+      document.getElementById('quizArea').classList.add('hidden');
+      document.getElementById('resultArea').classList.remove('hidden');
+    }
+    
+    function restartQuiz() {
+      currentQuestionIndex = 0;
+      score = 0;
+      answers = [];
+      
+      document.getElementById('quizArea').classList.remove('hidden');
+      document.getElementById('resultArea').classList.add('hidden');
+      
+      renderQuestion();
+    }
+    
+    // 初始化
+    document.addEventListener('DOMContentLoaded', initQuiz);
+  </script>
+</body>
+</html>

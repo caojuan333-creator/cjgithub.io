@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="CyberNet 安全科普 - 网络安全知识普及">
+  <title>安全科普 - CyberNet</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <style>
+    .page-header {
+      padding: calc(var(--nav-height) + var(--spacing-xl)) 0 var(--spacing-xl);
+      text-align: center;
+      background: linear-gradient(180deg, rgba(99, 102, 241, 0.1) 0%, transparent 100%);
+    }
+    
+    .page-title {
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    /* 分类标签 */
+    .category-tabs {
+      display: flex;
+      gap: var(--spacing-md);
+      justify-content: center;
+      padding: var(--spacing-lg) 0;
+      flex-wrap: wrap;
+    }
+    
+    .category-tab {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--spacing-sm);
+      padding: var(--spacing-sm);
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      font-size: 0.95rem;
+      min-width: 100px;
+      overflow: hidden;
+    }
+
+    .category-tab img {
+      width: 60px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: var(--radius-md);
+      transition: all var(--transition-fast);
+    }
+
+    .category-tab span {
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+    
+    .category-tab:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    .category-tab:hover img {
+      transform: scale(1.05);
+    }
+
+    .category-tab.active {
+      background: var(--gradient-primary);
+      border-color: transparent;
+      color: white;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+    }
+
+    .category-tab.active img {
+      opacity: 1;
+      transform: scale(1.05);
+    }
+    
+    /* 手风琴 */
+    .knowledge-section {
+      padding: var(--spacing-xl) 0;
+    }
+    
+    .accordion-container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    
+    .knowledge-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      margin-bottom: var(--spacing-md);
+      overflow: hidden;
+      transition: all var(--transition-normal);
+    }
+    
+    .knowledge-item:hover {
+      border-color: var(--primary);
+    }
+    
+    .knowledge-header {
+      padding: var(--spacing-lg);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .knowledge-title {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+    }
+    
+    .knowledge-icon {
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      transition: all var(--transition-normal);
+    }
+    
+    .knowledge-item:hover .knowledge-icon {
+      background: var(--gradient-primary);
+      transform: rotate(5deg);
+      box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+    }
+    
+    .knowledge-title h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: var(--spacing-xs);
+    }
+    
+    .knowledge-title p {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+    }
+    
+    .knowledge-arrow {
+      width: 30px;
+      height: 30px;
+      background: var(--bg-tertiary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-secondary);
+      transition: all var(--transition-normal);
+    }
+    
+    .knowledge-item.active .knowledge-arrow {
+      background: var(--primary);
+      color: white;
+      transform: rotate(180deg);
+    }
+    
+    .knowledge-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height var(--transition-normal);
+    }
+    
+    .knowledge-item.active .knowledge-content {
+      max-height: 1000px;
+    }
+    
+    .knowledge-body {
+      padding: 0 var(--spacing-lg) var(--spacing-lg);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-lg);
+    }
+    
+    .knowledge-text {
+      color: var(--text-secondary);
+      line-height: 1.8;
+    }
+    
+    .knowledge-text p {
+      margin-bottom: var(--spacing-md);
+    }
+    
+    .knowledge-tips {
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-md);
+    }
+    
+    .tips-title {
+      font-weight: 600;
+      color: var(--primary-light);
+      margin-bottom: var(--spacing-sm);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+    }
+    
+    .tips-list {
+      list-style: none;
+    }
+    
+    .tips-list li {
+      padding: var(--spacing-xs) 0;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      display: flex;
+      align-items: flex-start;
+      gap: var(--spacing-xs);
+    }
+    
+    .tips-list li::before {
+      content: '✓';
+      color: var(--primary-light);
+    }
+    
+    @media (max-width: 768px) {
+      .knowledge-body {
+        grid-template-columns: 1fr;
+      }
+      
+      .page-title {
+        font-size: 1.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 页面加载动画 -->
+  <div class="page-loader">
+    <div class="loader-content">
+      <div class="loader-spinner"></div>
+      <div class="loader-text">LOADING...</div>
+    </div>
+  </div>
+  
+  <!-- 粒子背景 -->
+  <div class="particles-bg">
+    <canvas id="particles-canvas"></canvas>
+  </div>
+  
+  <!-- 导航栏 -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="navbar-logo">
+        <div class="logo-icon">🛡️</div>
+        <span>CyberNet</span>
+      </a>
+      
+      <ul class="navbar-menu">
+        <li><a href="index.html">首页</a></li>
+        <li><a href="about.html">关于平台</a></li>
+        <li><a href="news.html">安全资讯</a></li>
+        <li><a href="dashboard.html">威胁监控</a></li>
+        <li><a href="knowledge.html" class="active">安全科普</a></li>
+        <li><a href="tools.html">在线工具</a></li>
+        <li><a href="quiz.html">安全测评</a></li>
+        <li><a href="resources.html">学习资源</a></li>
+        <li><a href="contact.html">留言反馈</a></li>
+      </ul>
+      
+      <div class="navbar-actions">
+        <button class="theme-toggle" title="切换主题">🌙</button>
+        <button class="menu-toggle">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+  
+  <!-- 主要内容 -->
+  <main class="main-content">
+    <section class="page-header">
+      <div class="container">
+        <h1 class="page-title scroll-reveal">安全科普</h1>
+        <p class="section-subtitle scroll-reveal">掌握网络安全知识，保护数字生活</p>
+      </div>
+    </section>
+    
+    <div class="container">
+      <div class="category-tabs scroll-reveal">
+        <button class="category-tab active" data-category="all">
+          <img src="images/tag-kb-all.jpg" alt="全部">
+          <span>全部</span>
+        </button>
+        <button class="category-tab" data-category="phishing">
+          <img src="images/tag-phishing.jpg" alt="钓鱼识别">
+          <span>钓鱼识别</span>
+        </button>
+        <button class="category-tab" data-category="password">
+          <img src="images/tag-password.jpg" alt="密码安全">
+          <span>密码安全</span>
+        </button>
+        <button class="category-tab" data-category="privacy">
+          <img src="images/tag-privacy.jpg" alt="隐私防护">
+          <span>隐私防护</span>
+        </button>
+        <button class="category-tab" data-category="wifi">
+          <img src="images/tag-wifi.jpg" alt="WiFi安全">
+          <span>WiFi安全</span>
+        </button>
+      </div>
+    </div>
+    
+    <section class="knowledge-section">
+      <div class="container">
+        <div class="accordion-container" id="knowledgeList">
+          <!-- 内容由 JS 生成 -->
+        </div>
+      </div>
+    </section>
+  </main>
+  
+  <!-- 页脚 -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4>CyberNet</h4>
+          <p style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.5rem;">
+            您的数字安全守护者<br>
+            智能・专业・可靠
+          </p>
+        </div>
+        <div class="footer-section">
+          <h4>核心功能</h4>
+          <ul>
+            <li><a href="news.html">安全资讯</a></li>
+            <li><a href="dashboard.html">威胁监控</a></li>
+            <li><a href="tools.html">在线工具</a></li>
+            <li><a href="quiz.html">安全测评</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>学习资源</h4>
+          <ul>
+            <li><a href="knowledge.html">安全科普</a></li>
+            <li><a href="resources.html">资源中心</a></li>
+            <li><a href="about.html">关于平台</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>联系我们</h4>
+          <ul>
+            <li><a href="contact.html">留言反馈</a></li>
+            <li><a href="mailto:security@cybernet.com">security@cybernet.com</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2024 CyberNet 数字安全中枢. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+  
+  <button class="back-to-top" title="回到顶部">↑</button>
+  
+  <script src="js/main.js"></script>
+  <script>
+    const knowledgeData = [
+      {
+        id: 1,
+        category: 'phishing',
+        icon: '🎣',
+        title: '如何识别钓鱼邮件',
+        desc: '学会辨别钓鱼邮件，保护个人信息安全',
+        content: `<p>钓鱼邮件是最常见的网络攻击手段之一。攻击者通过伪装成可信来源，诱导用户点击恶意链接或提供敏感信息。</p>
+        <p>识别钓鱼邮件的关键点包括：检查发件人地址是否真实、注意邮件中的紧急性语言、悬停链接查看真实目标地址等。</p>`,
+        tips: ['检查发件人邮箱地址是否与官方一致', '警惕紧急性和威胁性语言', '不轻易点击邮件中的链接', '通过官方渠道验证邮件内容', '使用邮件安全扫描工具']
+      },
+      {
+        id: 2,
+        category: 'password',
+        icon: '🔐',
+        title: '创建强密码的最佳实践',
+        desc: '掌握密码安全技巧，防止账户被盗',
+        content: `<p>强密码是账户安全的第一道防线。一个好的密码应该足够复杂，难以被猜测或破解。</p>
+        <p>建议使用至少12位字符，包含大小写字母、数字和特殊符号。避免使用生日、姓名等容易被猜测的信息。</p>`,
+        tips: ['密码长度至少12位', '混合使用大小写、数字、符号', '不同账户使用不同密码', '定期更换重要账户密码', '使用密码管理器存储密码']
+      },
+      {
+        id: 3,
+        category: 'privacy',
+        icon: '🛡️',
+        title: '个人信息保护指南',
+        desc: '了解如何保护您的个人隐私数据',
+        content: `<p>在数字化时代，个人信息保护变得越来越重要。我们需要了解哪些信息属于敏感信息，以及如何正确保护它们。</p>
+        <p>敏感信息包括身份证号、银行卡号、手机号、家庭住址等。这些信息一旦泄露，可能导致身份盗窃、财产损失等严重后果。</p>`,
+        tips: ['不在社交平台公开敏感信息', '设置社交媒体隐私权限', '定期检查账户隐私设置', '谨慎授权应用程序访问权限', '了解数据保护相关法律']
+      },
+      {
+        id: 4,
+        category: 'wifi',
+        icon: '📶',
+        title: '公共WiFi安全使用指南',
+        desc: '安全使用公共无线网络',
+        content: `<p>公共WiFi虽然方便，但也存在安全风险。攻击者可能通过伪造热点、中间人攻击等方式窃取用户数据。</p>
+        <p>在使用公共WiFi时，应避免进行敏感操作，如网银转账、登录重要账户等。建议使用VPN加密网络连接。</p>`,
+        tips: ['避免在公共WiFi上进行敏感操作', '确认WiFi名称的真实性', '使用VPN加密网络连接', '关闭WiFi自动连接功能', '使用HTTPS加密网站']
+      },
+      {
+        id: 5,
+        category: 'phishing',
+        icon: '🌐',
+        title: '识别钓鱼网站技巧',
+        desc: '辨别假冒网站，防止信息泄露',
+        content: `<p>钓鱼网站通过模仿正规网站的外观，诱导用户输入敏感信息。识别钓鱼网站需要注意观察URL地址、网站证书等细节。</p>
+        <p>正规网站通常使用HTTPS协议，浏览器地址栏会显示安全锁标志。如果发现异常，应立即停止操作。</p>`,
+        tips: ['检查URL地址是否正确', '确认网站使用HTTPS协议', '查看网站安全证书', '注意网站设计细节', '使用安全浏览功能']
+      },
+      {
+        id: 6,
+        category: 'password',
+        icon: '🔒',
+        title: '双重认证设置指南',
+        desc: '为账户添加额外的安全保护',
+        content: `<p>双重认证(2FA)是一种有效的账户保护机制。即使密码泄露，攻击者也需要第二重验证才能登录账户。</p>
+        <p>常见的双重认证方式包括短信验证码、身份验证器应用、硬件密钥等。建议为重要账户启用双重认证。</p>`,
+        tips: ['为重要账户启用双重认证', '优先使用身份验证器应用', '保存好备用验证码', '不要分享验证码给他人', '定期检查已授权设备']
+      }
+    ];
+    
+    let currentCategory = 'all';
+    
+    function renderKnowledge(category = 'all') {
+      const container = document.getElementById('knowledgeList');
+      container.innerHTML = '';
+      
+      const filteredData = category === 'all' 
+        ? knowledgeData 
+        : knowledgeData.filter(item => item.category === category);
+      
+      filteredData.forEach((item, index) => {
+        const element = document.createElement('div');
+        element.className = 'knowledge-item scroll-reveal';
+        element.dataset.category = item.category;
+        element.innerHTML = `
+          <div class="knowledge-header">
+            <div class="knowledge-title">
+              <div class="knowledge-icon">${item.icon}</div>
+              <div>
+                <h3>${item.title}</h3>
+                <p>${item.desc}</p>
+              </div>
+            </div>
+            <div class="knowledge-arrow">▼</div>
+          </div>
+          <div class="knowledge-content">
+            <div class="knowledge-body">
+              <div class="knowledge-text">
+                ${item.content}
+              </div>
+              <div class="knowledge-tips">
+                <div class="tips-title">💡 安全提示</div>
+                <ul class="tips-list">
+                  ${item.tips.map(tip => `<li>${tip}</li>`).join('')}
+                </ul>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        element.querySelector('.knowledge-header').addEventListener('click', () => {
+          element.classList.toggle('active');
+        });
+        
+        container.appendChild(element);
+      });
+      
+      // 触发动画
+      setTimeout(() => {
+        document.querySelectorAll('.scroll-reveal').forEach(el => {
+          el.classList.add('revealed');
+        });
+      }, 100);
+    }
+    
+    // 分类切换
+    document.querySelectorAll('.category-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        currentCategory = tab.dataset.category;
+        renderKnowledge(currentCategory);
+      });
+    });
+    
+    // 初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      renderKnowledge();
+    });
+  </script>
+</body>
+</html>

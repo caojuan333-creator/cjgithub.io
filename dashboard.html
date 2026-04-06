@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="CyberNet 威胁监控 - 实时安全态势">
+  <title>威胁监控 - CyberNet</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <style>
+    /* 监控页面特定样式 */
+    .dashboard-header {
+      padding: calc(var(--nav-height) + var(--spacing-xl)) 0 var(--spacing-lg);
+      background: linear-gradient(180deg, rgba(99, 102, 241, 0.1) 0%, transparent 100%);
+    }
+    
+    .dashboard-title {
+      font-size: 2rem;
+      font-weight: 800;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+      margin-top: var(--spacing-md);
+    }
+    
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+      padding: var(--spacing-xs) var(--spacing-sm);
+      background: rgba(16, 185, 129, 0.2);
+      border-radius: var(--radius-full);
+      font-size: 0.875rem;
+      color: #10b981;
+    }
+    
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: #10b981;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    
+    /* 监控面板 */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--spacing-lg);
+      padding: var(--spacing-xl) 0;
+    }
+    
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-xl);
+      padding: var(--spacing-lg);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--gradient-primary);
+    }
+    
+    .stat-card.danger::before {
+      background: linear-gradient(90deg, #ef4444, #f97316);
+    }
+    
+    .stat-card.warning::before {
+      background: linear-gradient(90deg, #f59e0b, #eab308);
+    }
+    
+    .stat-card.success::before {
+      background: linear-gradient(90deg, #10b981, #34d399);
+    }
+    
+    .stat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--spacing-md);
+    }
+    
+    .stat-title {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+    }
+    
+    .stat-icon {
+      width: 36px;
+      height: 36px;
+      background: rgba(99, 102, 241, 0.2);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+    }
+    
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      font-family: 'Courier New', monospace;
+    }
+    
+    .stat-change {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+      font-size: 0.8rem;
+      margin-top: var(--spacing-xs);
+    }
+    
+    .stat-change.up { color: #ef4444; }
+    .stat-change.down { color: #10b981; }
+    
+    /* 环形进度条区域 */
+    .progress-section {
+      padding: var(--spacing-xl) 0;
+    }
+    
+    .progress-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--spacing-xl);
+    }
+    
+    .progress-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-xl);
+      padding: var(--spacing-xl);
+      text-align: center;
+    }
+    
+    .circular-progress {
+      width: 150px;
+      height: 150px;
+      margin: 0 auto var(--spacing-md);
+      position: relative;
+    }
+    
+    .circular-progress svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+    
+    .circular-progress circle {
+      fill: none;
+      stroke-width: 10;
+      stroke-linecap: round;
+    }
+    
+    .progress-bg {
+      stroke: var(--bg-tertiary);
+    }
+    
+    .progress-bar-circle {
+      stroke: url(#progressGradient);
+      stroke-dasharray: 440;
+      stroke-dashoffset: 440;
+      transition: stroke-dashoffset 2s ease;
+    }
+    
+    .progress-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+    
+    .progress-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    
+    .progress-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+    
+    .progress-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: var(--spacing-xs);
+    }
+    
+    .progress-desc {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+    }
+    
+    /* 折线图区域 */
+    .chart-section {
+      padding: var(--spacing-xl) 0;
+    }
+    
+    .chart-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-xl);
+      padding: var(--spacing-xl);
+    }
+    
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--spacing-lg);
+    }
+    
+    .chart-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    
+    .chart-legend {
+      display: flex;
+      gap: var(--spacing-lg);
+    }
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+    
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    
+    .chart-container {
+      height: 300px;
+      position: relative;
+    }
+    
+    .chart-canvas {
+      width: 100%;
+      height: 100%;
+    }
+    
+    /* 攻击地域地图 */
+    .map-section {
+      padding: var(--spacing-xl) 0;
+    }
+    
+    .map-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-xl);
+      padding: var(--spacing-xl);
+    }
+    
+    .map-container {
+      height: 300px;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .attack-point {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: #ef4444;
+      border-radius: 50%;
+      animation: pulse-attack 1.5s infinite;
+    }
+    
+    @keyframes pulse-attack {
+      0% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(2);
+        opacity: 0;
+      }
+    }
+    
+    .attack-list {
+      margin-top: var(--spacing-lg);
+    }
+    
+    .attack-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--spacing-sm) 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .attack-item:last-child {
+      border-bottom: none;
+    }
+    
+    .attack-source {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+    
+    .attack-flag {
+      font-size: 1.25rem;
+    }
+    
+    .attack-count {
+      font-weight: 600;
+      color: var(--primary-light);
+    }
+    
+    @media (max-width: 1200px) {
+      .dashboard-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .progress-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 页面加载动画 -->
+  <div class="page-loader">
+    <div class="loader-content">
+      <div class="loader-spinner"></div>
+      <div class="loader-text">LOADING...</div>
+    </div>
+  </div>
+  
+  <!-- 粒子背景 -->
+  <div class="particles-bg">
+    <canvas id="particles-canvas"></canvas>
+  </div>
+  
+  <!-- 导航栏 -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="navbar-logo">
+        <div class="logo-icon">🛡️</div>
+        <span>CyberNet</span>
+      </a>
+      
+      <ul class="navbar-menu">
+        <li><a href="index.html">首页</a></li>
+        <li><a href="about.html">关于平台</a></li>
+        <li><a href="news.html">安全资讯</a></li>
+        <li><a href="dashboard.html" class="active">威胁监控</a></li>
+        <li><a href="knowledge.html">安全科普</a></li>
+        <li><a href="tools.html">在线工具</a></li>
+        <li><a href="quiz.html">安全测评</a></li>
+        <li><a href="resources.html">学习资源</a></li>
+        <li><a href="contact.html">留言反馈</a></li>
+      </ul>
+      
+      <div class="navbar-actions">
+        <button class="theme-toggle" title="切换主题">🌙</button>
+        <button class="menu-toggle">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+  
+  <!-- 主要内容 -->
+  <main class="main-content">
+    <!-- 头部 -->
+    <section class="dashboard-header">
+      <div class="container">
+        <h1 class="dashboard-title scroll-reveal">威胁监控中心</h1>
+        <div class="status-bar scroll-reveal">
+          <div class="status-indicator">
+            <span class="status-dot"></span>
+            <span>系统运行正常</span>
+          </div>
+          <span style="color: var(--text-secondary);">最后更新: <span id="lastUpdate">--:--:--</span></span>
+        </div>
+      </div>
+    </section>
+    
+    <!-- 统计面板 -->
+    <section class="container">
+      <div class="dashboard-grid">
+        <div class="stat-card scroll-reveal">
+          <div class="stat-header">
+            <span class="stat-title">今日拦截攻击</span>
+            <div class="stat-icon">🛡️</div>
+          </div>
+          <div class="stat-value" data-target="12847">0</div>
+          <div class="stat-change up">
+            <span>↑ 12.5%</span>
+            <span style="color: var(--text-muted)">较昨日</span>
+          </div>
+        </div>
+        
+        <div class="stat-card danger scroll-reveal">
+          <div class="stat-header">
+            <span class="stat-title">高危威胁</span>
+            <div class="stat-icon">⚠️</div>
+          </div>
+          <div class="stat-value" data-target="23">0</div>
+          <div class="stat-change up">
+            <span>↑ 3</span>
+            <span style="color: var(--text-muted)">较昨日</span>
+          </div>
+        </div>
+        
+        <div class="stat-card warning scroll-reveal">
+          <div class="stat-header">
+            <span class="stat-title">待处理告警</span>
+            <div class="stat-icon">🔔</div>
+          </div>
+          <div class="stat-value" data-target="156">0</div>
+          <div class="stat-change down">
+            <span>↓ 8.2%</span>
+            <span style="color: var(--text-muted)">较昨日</span>
+          </div>
+        </div>
+        
+        <div class="stat-card success scroll-reveal">
+          <div class="stat-header">
+            <span class="stat-title">防护成功率</span>
+            <div class="stat-icon">✅</div>
+          </div>
+          <div class="stat-value"><span data-target="99">0</span>%</div>
+          <div class="stat-change down">
+            <span>稳定</span>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- 环形进度条 -->
+    <section class="progress-section container">
+      <div class="progress-grid">
+        <div class="progress-card scroll-reveal">
+          <div class="circular-progress" data-progress="87">
+            <svg viewBox="0 0 150 150">
+              <defs>
+                <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#00d4ff"/>
+                  <stop offset="100%" stop-color="#8b5cf6"/>
+                </linearGradient>
+              </defs>
+              <circle class="progress-bg" cx="75" cy="75" r="60"/>
+              <circle class="progress-bar-circle" cx="75" cy="75" r="60"/>
+            </svg>
+            <div class="progress-text">
+              <div class="progress-value">87%</div>
+              <div class="progress-label">安全评分</div>
+            </div>
+          </div>
+          <h3 class="progress-title">整体安全评分</h3>
+          <p class="progress-desc">系统安全性良好</p>
+        </div>
+        
+        <div class="progress-card scroll-reveal">
+          <div class="circular-progress" data-progress="92">
+            <svg viewBox="0 0 150 150">
+              <circle class="progress-bg" cx="75" cy="75" r="60"/>
+              <circle class="progress-bar-circle" cx="75" cy="75" r="60"/>
+            </svg>
+            <div class="progress-text">
+              <div class="progress-value">92%</div>
+              <div class="progress-label">防护覆盖</div>
+            </div>
+          </div>
+          <h3 class="progress-title">防护覆盖率</h3>
+          <p class="progress-desc">资产已全面防护</p>
+        </div>
+        
+        <div class="progress-card scroll-reveal">
+          <div class="circular-progress" data-progress="78">
+            <svg viewBox="0 0 150 150">
+              <circle class="progress-bg" cx="75" cy="75" r="60"/>
+              <circle class="progress-bar-circle" cx="75" cy="75" r="60"/>
+            </svg>
+            <div class="progress-text">
+              <div class="progress-value">78%</div>
+              <div class="progress-label">修复进度</div>
+            </div>
+          </div>
+          <h3 class="progress-title">漏洞修复进度</h3>
+          <p class="progress-desc">部分漏洞待修复</p>
+        </div>
+      </div>
+    </section>
+    
+    <!-- 折线图 -->
+    <section class="chart-section container">
+      <div class="chart-card scroll-reveal">
+        <div class="chart-header">
+          <h3 class="chart-title">攻击趋势分析</h3>
+          <div class="chart-legend">
+            <div class="legend-item">
+              <span class="legend-dot" style="background: #6366f1;"></span>
+              <span>攻击次数</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-dot" style="background: #10b981;"></span>
+              <span>拦截次数</span>
+            </div>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="attackChart" class="chart-canvas"></canvas>
+        </div>
+      </div>
+    </section>
+    
+    <!-- 攻击地域 -->
+    <section class="map-section container">
+      <div class="map-card scroll-reveal">
+        <h3 class="chart-title" style="margin-bottom: var(--spacing-lg);">攻击来源地域分布</h3>
+        <div class="map-container">
+          🌍
+          <div class="attack-point" style="top: 30%; left: 20%;"></div>
+          <div class="attack-point" style="top: 40%; left: 45%;"></div>
+          <div class="attack-point" style="top: 25%; left: 70%;"></div>
+          <div class="attack-point" style="top: 60%; left: 35%;"></div>
+          <div class="attack-point" style="top: 50%; left: 80%;"></div>
+        </div>
+        
+        <div class="attack-list">
+          <div class="attack-item">
+            <div class="attack-source">
+              <span class="attack-flag">🇺🇸</span>
+              <span>美国</span>
+            </div>
+            <span class="attack-count">3,245 次</span>
+          </div>
+          <div class="attack-item">
+            <div class="attack-source">
+              <span class="attack-flag">🇷🇺</span>
+              <span>俄罗斯</span>
+            </div>
+            <span class="attack-count">2,876 次</span>
+          </div>
+          <div class="attack-item">
+            <div class="attack-source">
+              <span class="attack-flag">🇨🇳</span>
+              <span>中国</span>
+            </div>
+            <span class="attack-count">1,954 次</span>
+          </div>
+          <div class="attack-item">
+            <div class="attack-source">
+              <span class="attack-flag">🇧🇷</span>
+              <span>巴西</span>
+            </div>
+            <span class="attack-count">1,432 次</span>
+          </div>
+          <div class="attack-item">
+            <div class="attack-source">
+              <span class="attack-flag">🇮🇳</span>
+              <span>印度</span>
+            </div>
+            <span class="attack-count">987 次</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  
+  <!-- 页脚 -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4>CyberNet</h4>
+          <p style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.5rem;">
+            您的数字安全守护者<br>
+            智能・专业・可靠
+          </p>
+        </div>
+        <div class="footer-section">
+          <h4>核心功能</h4>
+          <ul>
+            <li><a href="news.html">安全资讯</a></li>
+            <li><a href="dashboard.html">威胁监控</a></li>
+            <li><a href="tools.html">在线工具</a></li>
+            <li><a href="quiz.html">安全测评</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>学习资源</h4>
+          <ul>
+            <li><a href="knowledge.html">安全科普</a></li>
+            <li><a href="resources.html">资源中心</a></li>
+            <li><a href="about.html">关于平台</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>联系我们</h4>
+          <ul>
+            <li><a href="contact.html">留言反馈</a></li>
+            <li><a href="mailto:security@cybernet.com">security@cybernet.com</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2024 CyberNet 数字安全中枢. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+  
+  <!-- 回到顶部按钮 -->
+  <button class="back-to-top" title="回到顶部">↑</button>
+  
+  <!-- 脚本 -->
+  <script src="js/main.js"></script>
+  <script>
+    // 更新时间
+    function updateTime() {
+      const now = new Date();
+      document.getElementById('lastUpdate').textContent = now.toLocaleTimeString('zh-CN');
+    }
+    updateTime();
+    setInterval(updateTime, 1000);
+    
+    // 数字动画
+    document.querySelectorAll('.stat-value [data-target]').forEach(el => {
+      const target = parseInt(el.dataset.target);
+      CyberNet.animateNumber(el, target, 2000);
+    });
+    
+    // 环形进度条动画
+    document.querySelectorAll('.circular-progress').forEach((progress, index) => {
+      const value = parseInt(progress.dataset.progress);
+      const circle = progress.querySelector('.progress-bar-circle');
+      const circumference = 2 * Math.PI * 60;
+      const offset = circumference - (value / 100) * circumference;
+      
+      setTimeout(() => {
+        circle.style.strokeDashoffset = offset;
+      }, index * 200);
+    });
+    
+    // 简易折线图
+    const canvas = document.getElementById('attackChart');
+    const ctx = canvas.getContext('2d');
+    
+    function drawChart() {
+      canvas.width = canvas.offsetWidth * 2;
+      canvas.height = canvas.offsetHeight * 2;
+      ctx.scale(2, 2);
+      
+      const width = canvas.offsetWidth;
+      const height = canvas.offsetHeight;
+      const padding = 40;
+      
+      // 数据
+      const attackData = [320, 450, 380, 520, 480, 650, 580, 720, 680, 850, 780, 920];
+      const blockData = [310, 440, 370, 510, 470, 640, 570, 710, 670, 840, 770, 910];
+      const labels = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+      
+      const maxValue = Math.max(...attackData) * 1.1;
+      const chartWidth = width - padding * 2;
+      const chartHeight = height - padding * 2;
+      const stepX = chartWidth / (attackData.length - 1);
+      
+      // 绘制网格线
+      ctx.strokeStyle = 'rgba(99, 102, 241, 0.1)';
+      ctx.lineWidth = 1;
+      for (let i = 0; i <= 5; i++) {
+        const y = padding + (chartHeight / 5) * i;
+        ctx.beginPath();
+        ctx.moveTo(padding, y);
+        ctx.lineTo(width - padding, y);
+        ctx.stroke();
+      }
+      
+      // 绘制攻击曲线
+      ctx.strokeStyle = '#6366f1';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      attackData.forEach((val, i) => {
+        const x = padding + i * stepX;
+        const y = padding + chartHeight - (val / maxValue) * chartHeight;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+      
+      // 绘制拦截曲线
+      ctx.strokeStyle = '#10b981';
+      ctx.beginPath();
+      blockData.forEach((val, i) => {
+        const x = padding + i * stepX;
+        const y = padding + chartHeight - (val / maxValue) * chartHeight;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+      
+      // 绘制数据点
+      attackData.forEach((val, i) => {
+        const x = padding + i * stepX;
+        const y = padding + chartHeight - (val / maxValue) * chartHeight;
+        ctx.fillStyle = '#6366f1';
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      
+      blockData.forEach((val, i) => {
+        const x = padding + i * stepX;
+        const y = padding + chartHeight - (val / maxValue) * chartHeight;
+        ctx.fillStyle = '#10b981';
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      
+      // 绘制标签
+      ctx.fillStyle = 'rgba(148, 163, 184, 0.8)';
+      ctx.font = '11px sans-serif';
+      ctx.textAlign = 'center';
+      labels.forEach((label, i) => {
+        const x = padding + i * stepX;
+        ctx.fillText(label, x, height - 15);
+      });
+    }
+    
+    // 初始化图表
+    setTimeout(drawChart, 100);
+    window.addEventListener('resize', drawChart);
+    
+    // 实时更新攻击数据（模拟）
+    setInterval(() => {
+      const statCards = document.querySelectorAll('.stat-value [data-target]');
+      const firstCard = statCards[0];
+      const current = parseInt(firstCard.textContent.replace(/,/g, ''));
+      firstCard.textContent = (current + Math.floor(Math.random() * 10)).toLocaleString();
+    }, 3000);
+  </script>
+</body>
+</html>

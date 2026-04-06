@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="关于 CyberNet 数字安全中枢 - 平台介绍">
+  <title>关于平台 - CyberNet</title>
+  <link rel="stylesheet" href="styles/main.css">
+  <style>
+    /* 关于页面特定样式 */
+    .page-header {
+      padding: calc(var(--nav-height) + var(--spacing-2xl)) 0 var(--spacing-2xl);
+      text-align: center;
+      background: linear-gradient(180deg, rgba(99, 102, 241, 0.1) 0%, transparent 100%);
+    }
+    
+    .page-title {
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: var(--spacing-sm);
+    }
+    
+    .page-desc {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+    }
+    
+    /* 平台介绍 */
+    .intro-section {
+      padding: var(--spacing-2xl) 0;
+    }
+    
+    .intro-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-2xl);
+      align-items: center;
+    }
+    
+    .intro-text {
+      opacity: 0;
+      transform: translateX(-30px);
+      transition: all 0.8s ease;
+    }
+    
+    .intro-text.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    
+    .intro-text h3 {
+      font-size: 1.5rem;
+      margin-bottom: var(--spacing-md);
+      color: var(--text-primary);
+    }
+    
+    .intro-text p {
+      color: var(--text-secondary);
+      line-height: 1.8;
+      margin-bottom: var(--spacing-md);
+    }
+    
+    .intro-image {
+      position: relative;
+      opacity: 0;
+      transform: translateX(30px);
+      transition: all 0.8s ease;
+    }
+    
+    .intro-image.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    
+    .intro-visual {
+      width: 100%;
+      aspect-ratio: 16/10;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .intro-visual::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+      animation: shine 3s infinite;
+    }
+    
+    @keyframes shine {
+      0% { transform: translateX(-100%) rotate(45deg); }
+      100% { transform: translateX(100%) rotate(45deg); }
+    }
+    
+    /* 折叠面板 */
+    .accordion-section {
+      padding: var(--spacing-2xl) 0;
+      background: var(--bg-secondary);
+    }
+    
+    .accordion {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .accordion-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      margin-bottom: var(--spacing-md);
+      overflow: hidden;
+      transition: all var(--transition-normal);
+    }
+    
+    .accordion-item:hover {
+      border-color: var(--primary);
+    }
+    
+    .accordion-header {
+      padding: var(--spacing-lg);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+    }
+    
+    .accordion-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+    
+    .accordion-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--gradient-primary);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+    }
+    
+    .accordion-arrow {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform var(--transition-normal);
+      color: var(--text-secondary);
+    }
+    
+    .accordion-item.active .accordion-arrow {
+      transform: rotate(180deg);
+    }
+    
+    .accordion-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height var(--transition-normal);
+    }
+    
+    .accordion-item.active .accordion-content {
+      max-height: 500px;
+    }
+    
+    .accordion-body {
+      padding: 0 var(--spacing-lg) var(--spacing-lg);
+      color: var(--text-secondary);
+      line-height: 1.8;
+    }
+    
+    /* 技术栈展示 */
+    .tech-section {
+      padding: var(--spacing-2xl) 0;
+    }
+    
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: var(--spacing-md);
+    }
+    
+    .tech-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      text-align: center;
+      transition: all var(--transition-normal);
+      cursor: pointer;
+      position: relative;
+    }
+    
+    .tech-item:hover {
+      transform: translateY(-5px);
+      border-color: var(--primary);
+      box-shadow: var(--shadow-glow);
+    }
+    
+    .tech-item .tech-icon {
+      font-size: 2.5rem;
+      margin-bottom: var(--spacing-sm);
+    }
+    
+    .tech-item .tech-name {
+      font-weight: 600;
+      margin-bottom: var(--spacing-xs);
+    }
+    
+    .tech-item .tech-desc {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    
+    .tech-tooltip {
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      padding: var(--spacing-sm) var(--spacing-md);
+      border-radius: var(--radius-md);
+      font-size: 0.875rem;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      transition: all var(--transition-fast);
+      z-index: 10;
+      margin-bottom: var(--spacing-sm);
+    }
+    
+    .tech-item:hover .tech-tooltip {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    @media (max-width: 768px) {
+      .intro-content {
+        grid-template-columns: 1fr;
+      }
+      
+      .page-title {
+        font-size: 1.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 页面加载动画 -->
+  <div class="page-loader">
+    <div class="loader-content">
+      <div class="loader-spinner"></div>
+      <div class="loader-text">LOADING...</div>
+    </div>
+  </div>
+  
+  <!-- 粒子背景 -->
+  <div class="particles-bg">
+    <canvas id="particles-canvas"></canvas>
+  </div>
+  
+  <!-- 导航栏 -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="navbar-logo">
+        <div class="logo-icon">🛡️</div>
+        <span>CyberNet</span>
+      </a>
+      
+      <ul class="navbar-menu">
+        <li><a href="index.html">首页</a></li>
+        <li><a href="about.html" class="active">关于平台</a></li>
+        <li><a href="news.html">安全资讯</a></li>
+        <li><a href="dashboard.html">威胁监控</a></li>
+        <li><a href="knowledge.html">安全科普</a></li>
+        <li><a href="tools.html">在线工具</a></li>
+        <li><a href="quiz.html">安全测评</a></li>
+        <li><a href="resources.html">学习资源</a></li>
+        <li><a href="contact.html">留言反馈</a></li>
+      </ul>
+      
+      <div class="navbar-actions">
+        <button class="theme-toggle" title="切换主题">🌙</button>
+        <button class="menu-toggle">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+  
+  <!-- 主要内容 -->
+  <main class="main-content">
+    <!-- 页面头部 -->
+    <section class="page-header">
+      <div class="container">
+        <h1 class="page-title scroll-reveal">关于 CyberNet</h1>
+        <p class="page-desc scroll-reveal">构建更安全的数字世界</p>
+      </div>
+    </section>
+    
+    <!-- 平台介绍 -->
+    <section class="intro-section">
+      <div class="container">
+        <div class="intro-content">
+          <div class="intro-text">
+            <h3>🚀 平台介绍</h3>
+            <p>
+              CyberNet 数字安全中枢是一个综合性的网络安全服务平台，致力于为个人用户和企业提供全方位的安全解决方案。
+            </p>
+            <p>
+              我们整合了威胁情报、安全科普、在线工具、知识测评等多种功能，帮助用户提升安全意识，防范网络风险。
+            </p>
+            <p>
+              通过智能化的威胁检测和实时的安全态势监控，我们能够第一时间发现并预警潜在的安全威胁，保护您的数字资产。
+            </p>
+          </div>
+          <div class="intro-image">
+            <div class="intro-visual">🛡️</div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- 设计理念（折叠面板） -->
+    <section class="accordion-section">
+      <div class="container">
+        <h2 class="section-title scroll-reveal" style="text-align: center; margin-bottom: var(--spacing-xl);">设计理念</h2>
+        
+        <div class="accordion">
+          <div class="accordion-item scroll-reveal">
+            <div class="accordion-header">
+              <div class="accordion-title">
+                <span class="accordion-icon">🎯</span>
+                <span>用户优先</span>
+              </div>
+              <span class="accordion-arrow">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="accordion-body">
+                <p>我们始终将用户体验放在首位，通过简洁直观的界面设计和流畅的交互体验，让复杂的网络安全知识变得易于理解和掌握。每一个功能模块都经过精心设计，确保用户能够快速上手并获得价值。</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="accordion-item scroll-reveal">
+            <div class="accordion-header">
+              <div class="accordion-title">
+                <span class="accordion-icon">🔒</span>
+                <span>安全为本</span>
+              </div>
+              <span class="accordion-arrow">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="accordion-body">
+                <p>安全是我们的核心使命。我们采用最先进的安全技术和最佳实践，确保平台本身的安全性，同时为用户提供可靠的安全工具和准确的安全信息，帮助用户构建坚固的数字防线。</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="accordion-item scroll-reveal">
+            <div class="accordion-header">
+              <div class="accordion-title">
+                <span class="accordion-icon">💡</span>
+                <span>持续创新</span>
+              </div>
+              <span class="accordion-arrow">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="accordion-body">
+                <p>网络安全威胁不断演变，我们的技术和方法也在持续创新。我们紧跟安全领域的最新发展，不断更新和优化平台功能，确保为用户提供最前沿的安全服务。</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="accordion-item scroll-reveal">
+            <div class="accordion-header">
+              <div class="accordion-title">
+                <span class="accordion-icon">🤝</span>
+                <span>开放共享</span>
+              </div>
+              <span class="accordion-arrow">▼</span>
+            </div>
+            <div class="accordion-content">
+              <div class="accordion-body">
+                <p>我们相信知识的共享能够创造更大的价值。平台提供的所有安全科普内容、学习资源和在线工具都免费向用户开放，致力于推动网络安全知识的普及和传播。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- 技术栈展示 -->
+    <section class="tech-section">
+      <div class="container">
+        <h2 class="section-title scroll-reveal" style="text-align: center;">技术栈</h2>
+        <p class="section-subtitle scroll-reveal" style="text-align: center;">支撑 CyberNet 运行的核心技术</p>
+        
+        <div class="tech-grid">
+          <div class="tech-item scroll-reveal">
+            <div class="tech-tooltip">高性能 JavaScript 运行时</div>
+            <div class="tech-icon">⚡</div>
+            <div class="tech-name">Node.js</div>
+            <div class="tech-desc">服务端运行时</div>
+          </div>
+          
+          <div class="tech-item scroll-reveal">
+            <div class="tech-tooltip">现代前端框架</div>
+            <div class="tech-icon">⚛️</div>
+            <div class="tech-name">React</div>
+            <div class="tech-desc">前端框架</div>
+          </div>
+          
+          <div class="tech-item scroll-reveal">
+            <div class="tech-tooltip">实时数据处理</div>
+            <div class="tech-icon">📊</div>
+            <div class="tech-name">D3.js</div>
+            <div class="tech-desc">数据可视化</div>
+          </div>
+          
+          <div class="tech-item scroll-reveal">
+            <div class="tech-tooltip">Web 应用防火墙</div>
+            <div class="tech-icon">🔥</div>
+            <div class="tech-name">WAF</div>
+            <div class="tech-desc">应用防火墙</div>
+          </div>
+          
+          <div class="tech-item scroll-reveal">
+            <div class="tech-tooltip">威胁情报平台</div>
+            <div class="tech-icon">🧠</div>
+            <div class="tech-name">AI/ML</div>
+            <div class="tech-desc">智能分析</div>
+          </div>
+          
+          <div class="tech-item scroll-reveal">
+            <div class="tech-tooltip">分布式存储</div>
+            <div class="tech-icon">💾</div>
+            <div class="tech-name">Database</div>
+            <div class="tech-desc">数据存储</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  
+  <!-- 页脚 -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4>CyberNet</h4>
+          <p style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.5rem;">
+            您的数字安全守护者<br>
+            智能・专业・可靠
+          </p>
+        </div>
+        <div class="footer-section">
+          <h4>核心功能</h4>
+          <ul>
+            <li><a href="news.html">安全资讯</a></li>
+            <li><a href="dashboard.html">威胁监控</a></li>
+            <li><a href="tools.html">在线工具</a></li>
+            <li><a href="quiz.html">安全测评</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>学习资源</h4>
+          <ul>
+            <li><a href="knowledge.html">安全科普</a></li>
+            <li><a href="resources.html">资源中心</a></li>
+            <li><a href="about.html">关于平台</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>联系我们</h4>
+          <ul>
+            <li><a href="contact.html">留言反馈</a></li>
+            <li><a href="mailto:security@cybernet.com">security@cybernet.com</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2024 CyberNet 数字安全中枢. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+  
+  <!-- 回到顶部按钮 -->
+  <button class="back-to-top" title="回到顶部">↑</button>
+  
+  <!-- 脚本 -->
+  <script src="js/main.js"></script>
+  <script>
+    // 滚动渐入动画
+    const introText = document.querySelector('.intro-text');
+    const introImage = document.querySelector('.intro-image');
+    
+    const introObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.3 });
+    
+    if (introText) introObserver.observe(introText);
+    if (introImage) introObserver.observe(introImage);
+    
+    // 折叠面板交互
+    document.querySelectorAll('.accordion-header').forEach(header => {
+      header.addEventListener('click', () => {
+        const item = header.parentElement;
+        const isActive = item.classList.contains('active');
+        
+        // 关闭所有其他面板
+        document.querySelectorAll('.accordion-item').forEach(i => {
+          i.classList.remove('active');
+        });
+        
+        // 切换当前面板
+        if (!isActive) {
+          item.classList.add('active');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
